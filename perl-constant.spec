@@ -1,0 +1,130 @@
+%{?scl:%scl_package perl-constant}
+
+%global cpan_version 1.27
+
+Name:           %{?scl_prefix}perl-constant
+Version:        1.33
+Release:        368%{?dist}
+Summary:        Perl pragma to declare constants
+License:        GPL+ or Artistic
+Group:          Development/Libraries
+URL:            http://search.cpan.org/dist/constant/
+Source0:        http://www.cpan.org/authors/id/S/SA/SAPER/constant-%{cpan_version}.tar.gz
+# Update to 1.33
+Patch0:         constant-1.33-update.patch
+BuildArch:      noarch
+BuildRequires:  %{?scl_prefix}perl
+BuildRequires:  %{?scl_prefix}perl-generators
+BuildRequires:  %{?scl_prefix}perl(ExtUtils::MakeMaker)
+BuildRequires:  %{?scl_prefix}perl(strict)
+# Run-time:
+BuildRequires:  %{?scl_prefix}perl(Carp)
+BuildRequires:  %{?scl_prefix}perl(vars)
+BuildRequires:  %{?scl_prefix}perl(warnings::register)
+# Tests:
+BuildRequires:  %{?scl_prefix}perl(Test::More)
+BuildRequires:  %{?scl_prefix}perl(utf8)
+BuildRequires:  %{?scl_prefix}perl(warnings)
+%if !%{defined perl_bootstrap} && !%{defined perl_small}
+# Optional tests:
+BuildRequires:  %{?scl_prefix}perl(Test::Pod) >= 1.14
+BuildRequires:  %{?scl_prefix}perl(Test::Pod::Coverage) >= 1.04
+%endif
+Requires:       %{?scl_prefix}perl(:MODULE_COMPAT_%(%{?scl:scl enable %{scl} '}eval "$(perl -V:version)";echo $version%{?scl:'}))
+Requires:       %{?scl_prefix}perl(Carp)
+
+%description
+This pragma allows you to declare constants at compile-time:
+
+use constant PI => 4 * atan2(1, 1);
+
+When you declare a constant such as "PI" using the method shown above,
+each machine your script runs upon can have as many digits of accuracy
+as it can use. Also, your program will be easier to read, more likely
+to be maintained (and maintained correctly), and far less likely to
+send a space probe to the wrong planet because nobody noticed the one
+equation in which you wrote 3.14195.
+
+When a constant is used in an expression, Perl replaces it with its
+value at compile time, and may then optimize the expression further.
+In particular, any code in an "if (CONSTANT)" block will be optimized
+away if the constant is false.
+
+%prep
+%setup -q -n constant-%{cpan_version}
+%patch0 -p1
+
+%build
+%{?scl:scl enable %{scl} '}perl Makefile.PL INSTALLDIRS=vendor && make %{?_smp_mflags}%{?scl:'}
+
+%install
+%{?scl:scl enable %{scl} '}make pure_install DESTDIR=$RPM_BUILD_ROOT%{?scl:'}
+find $RPM_BUILD_ROOT -type f -name .packlist -exec rm -f {} \;
+%{_fixperms} $RPM_BUILD_ROOT/*
+
+%check
+%{?scl:scl enable %{scl} '}make test%{?scl:'}
+
+%files
+%doc Changes eg README
+%{perl_vendorlib}/*
+%{_mandir}/man3/*
+
+%changelog
+* Mon Jul 11 2016 Petr Pisar <ppisar@redhat.com> - 1.33-368
+- SCL
+
+* Wed May 18 2016 Jitka Plesnikova <jplesnik@redhat.com> - 1.33-367
+- Perl 5.24 re-rebuild of bootstrapped packages
+
+* Sat May 14 2016 Jitka Plesnikova <jplesnik@redhat.com> - 1.33-365
+- Increase release to favour standalone package
+
+* Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 1.33-348
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
+* Thu Jun 18 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.33-347
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
+
+* Wed Jun 10 2015 Jitka Plesnikova <jplesnik@redhat.com> - 1.33-346
+- Perl 5.22 re-rebuild of bootstrapped packages
+
+* Thu Jun 04 2015 Jitka Plesnikova <jplesnik@redhat.com> - 1.33-345
+- Increase release to favour standalone package
+
+* Wed Jun 03 2015 Jitka Plesnikova <jplesnik@redhat.com> - 1.33-336
+- Perl 5.22 rebuild
+
+* Mon May 04 2015 Jitka Plesnikova <jplesnik@redhat.com> - 1.33-335
+- Patched to provide the version 1.33 which is bundled in Perl 5.22
+
+* Tue Sep 09 2014 Jitka Plesnikova <jplesnik@redhat.com> - 1.31-310
+- Patched to provide the version 1.31 which is bundled in Perl 5.20
+
+* Mon Sep 08 2014 Jitka Plesnikova <jplesnik@redhat.com> - 1.27-295
+- Perl 5.20 re-rebuild of bootstrapped packages
+
+* Wed Aug 27 2014 Jitka Plesnikova <jplesnik@redhat.com> - 1.27-294
+- Perl 5.20 rebuild
+
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.27-293
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Wed Aug 14 2013 Jitka Plesnikova <jplesnik@redhat.com> - 1.27-292
+- Perl 5.18 re-rebuild of bootstrapped packages
+
+* Sun Aug 04 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.27-291
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
+
+* Mon Jul 15 2013 Petr Pisar <ppisar@redhat.com> - 1.27-290
+- Increase release to favour standalone package
+
+* Fri Jul 12 2013 Petr Pisar <ppisar@redhat.com> - 1.27-3
+- Link minimal build-root packages against libperl.so explicitly
+
+* Fri Jul 12 2013 Petr Pisar <ppisar@redhat.com> - 1.27-2
+- Migrate to ExtUtils::MakeMaker
+- Do not run optional tests at boot-strap
+
+* Thu Mar 21 2013 Petr Pisar <ppisar@redhat.com> - 1.27-1
+- Specfile autogenerated by cpanspec 1.78.
