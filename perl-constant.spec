@@ -11,7 +11,7 @@
 
 Name:           %{?scl_prefix}perl-constant
 Version:        1.33
-Release:        451%{?dist}
+Release:        452%{?dist}
 Summary:        Perl pragma to declare constants
 License:        GPL+ or Artistic
 URL:            https://metacpan.org/release/constant
@@ -22,6 +22,7 @@ BuildArch:      noarch
 BuildRequires:  make
 BuildRequires:  %{?scl_prefix}perl-interpreter
 BuildRequires:  %{?scl_prefix}perl-generators
+BuildRequires:  %{?scl_prefix}perl(Config)
 BuildRequires:  %{?scl_prefix}perl(ExtUtils::MakeMaker)
 BuildRequires:  %{?scl_prefix}perl(strict)
 # Run-time:
@@ -60,6 +61,8 @@ away if the constant is false.
 %prep
 %setup -q -n constant-%{cpan_version}
 %patch0 -p1
+# Correct a shebang, bug #1817034
+%{?scl:scl enable %{scl} '}perl -MConfig -i -pe %{?scl:'"}'%{?scl:"'}s{^#!/usr/bin/perl}{$Config{startperl}}%{?scl:'"}'%{?scl:"'} eg/synopsis.pl%{?scl:'}
 
 %build
 %{?scl:scl enable %{scl} '}perl Makefile.PL INSTALLDIRS=vendor && make %{?_smp_mflags}%{?scl:'}
@@ -78,6 +81,9 @@ find $RPM_BUILD_ROOT -type f -name .packlist -exec rm -f {} \;
 %{_mandir}/man3/*
 
 %changelog
+* Wed Mar 25 2020 Petr Pisar <ppisar@redhat.com> - 1.33-452
+- Normalize a shebang in the documentation (bug #1817034)
+
 * Fri Dec 20 2019 Jitka Plesnikova <jplesnik@redhat.com> - 1.33-451
 - SCL
 
